@@ -1,0 +1,627 @@
+# hypoxia-city
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кислородное голодание городских жителей</title>
+    <!-- Chart.js для диаграмм -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e3f2f0 0%, #d4ece8 100%);
+            color: #1e3b3b;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(6px);
+            border-radius: 40px;
+            padding: 35px 40px;
+            box-shadow: 0 20px 40px rgba(30, 70, 70, 0.1);
+            border: 1px solid #b8ddd6;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 600;
+            color: #1d5e5a;
+            letter-spacing: -0.5px;
+            margin-bottom: 10px;
+            border-left: 10px solid #7fc1b6;
+            padding-left: 25px;
+        }
+
+        h2 {
+            font-size: 1.9rem;
+            font-weight: 500;
+            color: #1f6d64;
+            margin: 35px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 3px dashed #9acfc6;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #1e5f56;
+            margin: 20px 0 12px;
+        }
+
+        .subhead {
+            font-size: 1.2rem;
+            color: #337c72;
+            margin-bottom: 30px;
+            font-style: italic;
+            padding-left: 30px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .card {
+            background: #f2fcf9;
+            border-radius: 30px;
+            padding: 22px 20px;
+            box-shadow: 0 6px 18px rgba(90, 140, 130, 0.12);
+            border: 1px solid #c2e3db;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            background: #e4f7f2;
+            transform: translateY(-3px);
+        }
+
+        .card h4 {
+            color: #17635b;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card p, .card ul {
+            color: #255f57;
+            font-size: 0.98rem;
+        }
+
+        .card ul {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .card li {
+            margin-bottom: 6px;
+        }
+
+        .diagram-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .chart-container {
+            flex: 1 1 400px;
+            background: #ffffffd6;
+            border-radius: 30px;
+            padding: 20px 20px 10px;
+            box-shadow: 0 6px 14px rgba(70, 120, 110, 0.1);
+            border: 1px solid #cce7e1;
+        }
+
+        .chart-container h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: #1f6d64;
+        }
+
+        canvas {
+            max-height: 280px;
+            max-width: 100%;
+        }
+
+        .example-box {
+            background: #dfeeea;
+            border-radius: 28px;
+            padding: 25px 30px;
+            margin: 30px 0;
+            border-left: 10px solid #54a397;
+            box-shadow: 0 8px 16px rgba(60, 110, 100, 0.08);
+        }
+
+        .example-box h3 {
+            margin-top: 0;
+            color: #105e55;
+        }
+
+        .example-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b0d6ce;
+        }
+
+        .example-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .example-item strong {
+            color: #0b5e55;
+            font-size: 1.15rem;
+        }
+
+        .poll {
+            background: #c3e4de;
+            border-radius: 40px;
+            padding: 30px 35px;
+            margin: 45px 0 30px;
+            box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.7), 0 10px 20px rgba(40, 80, 75, 0.1);
+            border: 1px solid #a8d1c8;
+        }
+
+        .poll h3 {
+            font-size: 1.6rem;
+            color: #175e56;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .poll-option {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            gap: 12px;
+            background: #e7f6f2;
+            padding: 14px 22px;
+            border-radius: 50px;
+            border: 1px solid #b1d6ce;
+            transition: 0.15s;
+            cursor: pointer;
+        }
+
+        .poll-option:hover {
+            background: #d4efea;
+        }
+
+        .poll-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #2b8f7f;
+            cursor: pointer;
+        }
+
+        .poll-option label {
+            font-size: 1.1rem;
+            color: #194e47;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .vote-btn {
+            background: #4c9e8f;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            padding: 14px 35px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin-top: 18px;
+            box-shadow: 0 8px 0 #2e6b60;
+            transition: 0.1s;
+            letter-spacing: 0.3px;
+        }
+
+        .vote-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #2e6b60;
+        }
+
+        .vote-btn:disabled {
+            opacity: 0.6;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #2e6b60;
+            cursor: default;
+        }
+
+        .poll-results {
+            margin-top: 25px;
+            background: #ecfaf7;
+            padding: 20px 25px;
+            border-radius: 28px;
+            border: 1px solid #b1d9d0;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            font-size: 1.1rem;
+        }
+
+        .bar-bg {
+            height: 16px;
+            background: #c2dfd9;
+            border-radius: 30px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #4b9b8b;
+            border-radius: 30px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 3px solid #9fcec5;
+            text-align: center;
+            font-size: 1rem;
+            color: #235e56;
+            background: #e5f3f0;
+            border-radius: 30px;
+            padding: 30px;
+        }
+
+        .footer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-info p {
+            margin: 4px 0;
+        }
+
+        .encyclopedia {
+            font-style: italic;
+            background: #d7ebe6;
+            padding: 8px 18px;
+            border-radius: 40px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .poll {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🌿 Кислородное голодание городских жителей</h1>
+    <div class="subhead">Гипоксия в мегаполисах: почему это происходит, как защититься и что есть в критический момент</div>
+
+    <!-- Карточки с полезной информацией -->
+    <div class="card-grid">
+        <div class="card">
+            <h4>🚨 Что делать, чтобы не задохнуться</h4>
+            <ul>
+                <li>Проветривайте помещение 2–3 раза в день по 10–15 минут.</li>
+                <li>Установите очиститель воздуха с HEPA-фильтром и ионизатором.</li>
+                <li>Прогуливайтесь в парках и скверах не менее 40 минут в день.</li>
+                <li>Дышите носом — это естественный фильтр и увлажнитель.</li>
+                <li>Избегайте физических нагрузок в часы пик рядом с трассами.</li>
+                <li>Используйте увлажнитель, если воздух сухой.</li>
+                <li>Следите за уровнем CO₂ в квартире (норма до 800 ppm).</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🥦 Продукты-антигипоксанты</h4>
+            <ul>
+                <li><strong>Свёкла</strong> — расширяет сосуды, улучшает транспорт кислорода.</li>
+                <li><strong>Зелёные листовые</strong> (шпинат, руккола) — богаты нитратами и железом.</li>
+                <li><strong>Чёрная смородина</strong> — антиоксиданты, витамин C.</li>
+                <li><strong>Морская капуста</strong> — йод, микроэлементы для щитовидной железы.</li>
+                <li><strong>Куркума + имбирь</strong> — разжижают кровь, улучшают микроциркуляцию.</li>
+                <li><strong>Тыквенные семечки</strong> — магний, цинк, железо.</li>
+                <li><strong>Тёмный шоколад (70%+)</strong> — флавоноиды для сосудов.</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🏙️ Примеры городских голоданий (гипоксии)</h4>
+            <ul>
+                <li><strong>Москва, 2010</strong> — смог от лесных пожаров, концентрация CO выросла в 6 раз.</li>
+                <li><strong>Лондон, 1952</strong> — Великий смог, более 12 000 жертв.</li>
+                <li><strong>Пекин, 2013</strong> — «воздушный апокалипсис», PM2.5 > 500 мкг/м³.</li>
+                <li><strong>Норильск, 2021</strong> — выбросы диоксида серы, нехватка кислорода.</li>
+                <li><strong>Мехико</strong> — из-за высокогорья и смога постоянная гипоксия.</li>
+                <li><strong>Тверь, 2022–2023</strong> — рост жалоб на нехватку воздуха в центре.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Диаграммы -->
+    <h2>📊 Статистика и данные</h2>
+    <div class="diagram-section">
+        <div class="chart-container">
+            <h3>Уровень кислорода в воздухе (условно, % от нормы)</h3>
+            <canvas id="chartOxygen" width="400" height="250"></canvas>
+        </div>
+        <div class="chart-container">
+            <h3>Жалобы на нехватку воздуха (на 1000 жителей)</h3>
+            <canvas id="chartComplaints" width="400" height="250"></canvas>
+        </div>
+    </div>
+
+    <!-- Тверская область -->
+    <h2>🌲 Тверская область: ситуация и рекомендации</h2>
+    <div class="example-box">
+        <p>Тверская область — регион с богатыми лесными массивами, но городские жители Твери, Кимр, Ржева и Вышнего Волочка всё чаще сталкиваются с симптомами гипоксии. Основные причины: выхлопные газы, близость промзон, редкая сеть озеленения в центре, а также торфяные пожары в засушливые годы.</p>
+        <div class="example-item">
+            <strong>Тверь, центр (2023):</strong> превышение ПДК по диоксиду азота в 1,8 раза в часы пик. Жалобы на головные боли и слабость выросли на 22% по сравнению с 2021 годом.
+        </div>
+        <div class="example-item">
+            <strong>Кимры:</strong> локальные котельные и автотранспорт создают «кислородные ямы» в утренние часы.
+        </div>
+        <div class="example-item">
+            <strong>Ржев:</strong> вблизи федеральной трассы М-9 уровень CO выше нормы в 2–3 раза в безветренную погоду.
+        </div>
+        <p><strong>Что делать в Тверской области:</strong> чаще выезжать в леса (Завидово, Селигер), использовать очистители воздуха, поддержать озеленение дворов, в критические дни (смог, пожары) носить маску N95 и пить больше жидкости с антиоксидантами.</p>
+    </div>
+
+    <!-- Опрос / взаимодействие -->
+    <div class="poll" id="pollBlock">
+        <h3>🗳️ Ваше мнение: что для вас главное в защите от гипоксии?</h3>
+        <form id="pollForm">
+            <div class="poll-option">
+                <input type="radio" name="poll" id="opt1" value="Прогулки в парках">
+                <label for="opt1">Прогулки в парках и лесах</label>
+            </div>
+            <div class="poll-option">
+                <input type="radio" name="poll" id="opt2" value="Очистители воздуха">
+                <label for="opt2">Очистители и увлажнители воздуха</label>
+            </div>
+            <div class="poll-option">
+                <input type="radio" name="poll" id="opt3" value="Правильное питание">
+                <label for="opt3">Продукты-антигипоксанты (свёкла, зелень)</label>
+            </div>
+            <div class="poll-option">
+                <input type="radio" name="poll" id="opt4" value="Мониторинг CO2">
+                <label for="opt4">Датчики CO₂ и контроль качества воздуха</label>
+            </div>
+            <div class="poll-option">
+                <input type="radio" name="poll" id="opt5" value="Переезд за город">
+                <label for="opt5">Переезд за город / на природу</label>
+            </div>
+            <button type="button" class="vote-btn" id="voteBtn">Проголосовать</button>
+        </form>
+        <div class="poll-results" id="pollResults" style="display: none;">
+            <h4 style="color: #1b5e55; margin-bottom: 12px;">Результаты голосования:</h4>
+            <div id="resultsList"></div>
+            <p style="margin-top: 16px; font-size: 0.95rem; color: #306e65;">Спасибо, что делитесь мнением! 💚</p>
+        </div>
+    </div>
+
+    <!-- Подвал -->
+    <footer>
+        <div class="footer-info">
+            <p><strong>Выполнила:</strong> Чувалова Анна, 13 группа</p>
+            <p class="encyclopedia">📚 При создании сайта использованы:</p>
+            <p>«Медицинская энциклопедия» (гл. ред. Б.В. Петровский), «Энциклопедия окружающей среды» (Ю.А. Израэль), «Большая российская энциклопедия» (экология и медицина), «Гигиена и экология человека» (учебник для вузов).</p>
+            <p style="margin-top: 15px;">© 2025 • Кислородное голодание городских жителей • Все данные носят информационный характер</p>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // ----- Диаграммы -----
+    // 1. Уровень кислорода (условные данные по городам)
+    const ctxOxygen = document.getElementById('chartOxygen').getContext('2d');
+    new Chart(ctxOxygen, {
+        type: 'bar',
+        data: {
+            labels: ['Тверь (центр)', 'Москва (центр)', 'Санкт-Петербург', 'Норильск', 'Загород (норма)'],
+            datasets: [{
+                label: 'O₂, % от нормы',
+                data: [88, 82, 86, 79, 100],
+                backgroundColor: ['#8ac6b9', '#7ab8aa', '#6fa89c', '#60998d', '#a2d9ce'],
+                borderRadius: 8,
+                borderColor: '#4b8b7e',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { backgroundColor: '#2f6e62' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 110,
+                    grid: { color: '#c2e0d9' },
+                    ticks: { color: '#265f55' }
+                },
+                x: {
+                    ticks: { color: '#265f55', font: { size: 11 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // 2. Жалобы на нехватку воздуха
+    const ctxComplaints = document.getElementById('chartComplaints').getContext('2d');
+    new Chart(ctxComplaints, {
+        type: 'line',
+        data: {
+            labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
+            datasets: [
+                {
+                    label: 'Тверь',
+                    data: [12, 15, 18, 25, 29, 34],
+                    borderColor: '#3b8b7c',
+                    backgroundColor: 'rgba(90, 170, 155, 0.15)',
+                    tension: 0.2,
+                    fill: true,
+                    pointBackgroundColor: '#2d6e62',
+                },
+                {
+                    label: 'Москва',
+                    data: [30, 34, 40, 48, 55, 60],
+                    borderColor: '#6aa89c',
+                    backgroundColor: 'rgba(130, 190, 180, 0.1)',
+                    tension: 0.2,
+                    fill: true,
+                    pointBackgroundColor: '#578d81',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { labels: { color: '#1f5e55', boxWidth: 12 } }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#c2e0d9' },
+                    ticks: { color: '#265f55' }
+                },
+                x: {
+                    ticks: { color: '#265f55' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // ----- Опрос с голосованием (localStorage, чтобы не сбрасывался при перезагрузке) -----
+    const pollForm = document.getElementById('pollForm');
+    const voteBtn = document.getElementById('voteBtn');
+    const pollResults = document.getElementById('pollResults');
+    const resultsList = document.getElementById('resultsList');
+
+    // Начальные голоса (для наглядности)
+    let votes = {
+        'Прогулки в парках': 23,
+        'Очистители воздуха': 18,
+        'Правильное питание': 15,
+        'Мониторинг CO2': 9,
+        'Переезд за город': 12
+    };
+
+    // Проверяем, есть ли сохранённые голоса в localStorage
+    if (localStorage.getItem('hypoxiaVotes')) {
+        try {
+            const saved = JSON.parse(localStorage.getItem('hypoxiaVotes'));
+            if (saved && typeof saved === 'object') {
+                votes = saved;
+            }
+        } catch (e) {}
+    }
+
+    // Проверяем, голосовал ли уже пользователь (по флагу)
+    const hasVoted = localStorage.getItem('hypoxiaHasVoted') === 'true';
+
+    // Если уже голосовал — показываем результаты, скрываем форму
+    if (hasVoted) {
+        pollForm.style.display = 'none';
+        pollResults.style.display = 'block';
+        renderResults();
+    } else {
+        pollForm.style.display = 'block';
+        pollResults.style.display = 'none';
+    }
+
+    // Функция отрисовки результатов
+    function renderResults() {
+        const total = Object.values(votes).reduce((a, b) => a + b, 0);
+        let html = '';
+        // Сортируем по убыванию
+        const sorted = Object.entries(votes).sort((a, b) => b[1] - a[1]);
+        sorted.forEach(([option, count]) => {
+            const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+            html += `
+                <div class="result-item">
+                    <span>${option}</span>
+                    <span><strong>${count}</strong> голосов (${percent}%)</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: ${percent}%;"></div>
+                </div>
+            `;
+        });
+        html += `<p style="margin-top: 15px; font-size: 0.95rem; color: #2e6b60;">Всего голосов: ${total}</p>`;
+        resultsList.innerHTML = html;
+    }
+
+    // Обработчик голосования
+    voteBtn.addEventListener('click', function() {
+        const selected = document.querySelector('input[name="poll"]:checked');
+        if (!selected) {
+            alert('Пожалуйста, выберите вариант ответа.');
+            return;
+        }
+        const value = selected.value;
+
+        // Увеличиваем счётчик
+        if (votes[value] !== undefined) {
+            votes[value] += 1;
+        } else {
+            votes[value] = 1;
+        }
+
+        // Сохраняем в localStorage
+        localStorage.setItem('hypoxiaVotes', JSON.stringify(votes));
+        localStorage.setItem('hypoxiaHasVoted', 'true');
+
+        // Скрываем форму, показываем результаты
+        pollForm.style.display = 'none';
+        pollResults.style.display = 'block';
+        renderResults();
+
+        // Блокируем кнопку на всякий случай (форма скрыта, но на будущее)
+        voteBtn.disabled = true;
+    });
+
+    // Если пользователь уже голосовал, но данные в localStorage могли измениться – перерисуем
+    if (hasVoted) {
+        renderResults();
+    }
+
+    // Дополнительно: если кто-то откроет в двух вкладках, голосование во второй вкладке не сработает (форма скрыта)
+    // но это нормально для простого примера.
+</script>
+</body>
+</html>
